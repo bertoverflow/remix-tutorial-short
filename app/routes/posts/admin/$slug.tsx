@@ -6,8 +6,11 @@ import invariant from "tiny-invariant";
 import { getPost, updatePost } from "~/models/post.server";
 import { PostForm } from "~/domain/posts/PostForm";
 import { validatePostFormData } from "~/domain/posts/validatePostFormData";
+import { requireAdminUser } from "~/session.server";
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
+  await requireAdminUser(request);
+
   invariant(params.slug, `params.slug is required`);
 
   const post = await getPost(params.slug);
@@ -19,6 +22,8 @@ export const loader = async ({ params }: LoaderArgs) => {
 export const action = async ({ request }: ActionArgs) => {
   // TODO: remove me
   await new Promise((res) => setTimeout(res, 1000));
+
+  await requireAdminUser(request);
 
   const formData = await request.formData();
 

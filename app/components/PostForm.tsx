@@ -1,9 +1,9 @@
 import { Form } from "@remix-run/react";
 import type { FC } from "react";
-import type { Post } from "@prisma/client";
+import type { Post } from "~/models/post.server";
 
 type PostFormProps = {
-  initialPost?: Pick<Post, "slug" | "title" | "markdown">;
+  initialPost?: Post;
   errors?: {
     slug: string | null;
     title: string | null;

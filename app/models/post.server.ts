@@ -1,6 +1,8 @@
 import { prisma } from "~/db.server";
 
-import type { Post } from "@prisma/client";
+import type { Post as PrismaPost } from "@prisma/client";
+
+export type Post = Pick<PrismaPost, "slug" | "title" | "markdown">;
 
 export async function getPosts() {
   return prisma.post.findMany();
@@ -10,14 +12,10 @@ export async function getPost(slug: string) {
   return prisma.post.findUnique({ where: { slug } });
 }
 
-export async function createPost(
-  post: Pick<Post, "slug" | "title" | "markdown">
-) {
+export async function createPost(post: Post) {
   return prisma.post.create({ data: post });
 }
 
-export async function updatePost(
-  post: Pick<Post, "slug" | "title" | "markdown">
-) {
+export async function updatePost(post: Post) {
   return prisma.post.update({ where: { slug: post.slug }, data: post });
 }

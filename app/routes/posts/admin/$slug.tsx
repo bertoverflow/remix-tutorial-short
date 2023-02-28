@@ -4,7 +4,7 @@ import { useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import invariant from "tiny-invariant";
 
 import { getPost, updatePost } from "~/models/post.server";
-import { PostForm } from "~/domain/posts/PostForm";
+import { EditPostForm } from "~/domain/posts/PostForm";
 import { validatePostFormData } from "~/domain/posts/validatePostFormData";
 import { requireAdminUser } from "~/session.server";
 
@@ -46,12 +46,11 @@ export default function NewPost() {
   const isSaving = Boolean(navigation.state === "submitting");
 
   return (
-    <PostForm
+    <EditPostForm
       key={post.slug}
       errors={errors}
       initialPost={post}
-      disabled={isSaving}
-      buttonText={isSaving ? "Saving..." : "Save Post"}
+      loading={isSaving}
     />
   );
 }

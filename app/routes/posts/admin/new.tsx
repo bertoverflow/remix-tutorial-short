@@ -1,10 +1,10 @@
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData, useNavigation } from "@remix-run/react";
-import invariant from "tiny-invariant";
 
 import { createPost } from "~/models/post.server";
-import { PostForm } from "~/components/PostForm";
+import { PostForm } from "~/domain/posts/PostForm";
+import { validatePostFormData } from "~/domain/posts/validatePostFormData";
 
 export const action = async ({ request }: ActionArgs) => {
   // TODO: remove me
@@ -12,25 +12,13 @@ export const action = async ({ request }: ActionArgs) => {
 
   const formData = await request.formData();
 
-  const title = formData.get("title");
-  const slug = formData.get("slug");
-  const markdown = formData.get("markdown");
+  const validationResult = validatePostFormData(formData);
 
-  const errors = {
-    title: title ? null : "Title is required",
-    slug: slug ? null : "Slug is required",
-    markdown: markdown ? null : "Markdown is required",
-  };
-  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
-  if (hasErrors) {
-    return json(errors);
+  if (validationResult.hasErrors) {
+    return json(validationResult.errors);
   }
 
-  invariant(typeof title === "string", "title must be a string");
-  invariant(typeof slug === "string", "slug must be a string");
-  invariant(typeof markdown === "string", "markdown must be a string");
-
-  await createPost({ title, slug, markdown });
+  await createPost(validationResult.post);
 
   return redirect("/posts/admin");
 };

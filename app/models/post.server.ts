@@ -4,8 +4,13 @@ import type { Post as PrismaPost } from "@prisma/client";
 
 export type Post = Pick<PrismaPost, "slug" | "title" | "markdown">;
 
-export async function getPosts() {
-  return prisma.post.findMany();
+export async function getPostListings() {
+  return prisma.post.findMany({
+    select: {
+      slug: true,
+      title: true,
+    },
+  });
 }
 
 export async function getPost(slug: string) {

@@ -1,10 +1,10 @@
 import { json } from "@remix-run/node";
 import { Link, Outlet, useLoaderData } from "@remix-run/react";
 
-import { getPosts } from "~/models/post.server";
+import { getPostListings } from "~/models/post.server";
 
 export const loader = async () => {
-  return json({ posts: await getPosts() });
+  return json({ posts: await getPostListings() });
 };
 
 export default function PostAdmin() {

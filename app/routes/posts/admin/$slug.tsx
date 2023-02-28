@@ -58,7 +58,7 @@ export default function NewPost() {
   const isSaving = Boolean(navigation.state === "submitting");
 
   return (
-    <Form method="post">
+    <Form method="post" key={post.slug}>
       <p>
         <label>
           Post Title:{" "}

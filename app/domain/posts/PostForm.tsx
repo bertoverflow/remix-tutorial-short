@@ -1,16 +1,9 @@
 import { Form } from "@remix-run/react";
-import type { FC } from "react";
+import type { FC, ReactNode } from "react";
+import React from "react";
 import type { Post } from "~/models/post.server";
 
-// TODO how to make this type work !?!?!?!
-export const POST_FORM_INTENTS = {
-  CREATE: "create",
-  UPDATE: "update",
-  DELETE: "delete",
-} as const;
-
-type POST_FORM_INTENTS_TYPE =
-  (typeof POST_FORM_INTENTS)[keyof typeof POST_FORM_INTENTS];
+type PostFormIntents = "create" | "update" | "delete";
 
 type PostFormProps = {
   initialPost?: Post;
@@ -19,21 +12,11 @@ type PostFormProps = {
     title: string | null;
     markdown: string | null;
   };
-  loading: boolean;
-  actionButtonText: string;
-  actionButtonIntent: Exclude<POST_FORM_INTENTS_TYPE, "delete">; // TODO use type from above
   children?: React.ReactNode;
 };
 
 const inputClassName = `w-full rounded border border-gray-500 px-2 py-1 text-lg`;
-const PostForm: FC<PostFormProps> = ({
-  initialPost,
-  errors,
-  loading,
-  actionButtonText,
-  actionButtonIntent,
-  children,
-}) => {
+const PostForm: FC<PostFormProps> = ({ initialPost, errors, children }) => {
   return (
     <Form method="post">
       <p>
@@ -80,56 +63,68 @@ const PostForm: FC<PostFormProps> = ({
           defaultValue={initialPost?.markdown}
         ></textarea>
       </p>
-      <div className="flex justify-end gap-4">
-        {children}
-        <button
-          type="submit"
-          name="intent"
-          value={actionButtonIntent}
-          className="rounded bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:bg-blue-300"
-          disabled={loading}
-        >
-          {actionButtonText}
-        </button>
-      </div>
+      <div className="flex justify-end gap-4">{children}</div>
     </Form>
   );
 };
 
-export const NewPostForm: FC<Pick<PostFormProps, "errors" | "loading">> = ({
-  errors,
-  loading,
-}) => {
+export const NewPostForm: FC<
+  Pick<PostFormProps, "errors"> & { readonly isCreating: boolean }
+> = ({ errors, isCreating }) => {
   return (
-    <PostForm
-      errors={errors}
-      loading={loading}
-      actionButtonIntent="create"
-      actionButtonText={loading ? "Creating..." : "Create Post"}
-    ></PostForm>
+    <PostForm errors={errors}>
+      <IntentButton
+        intent="create"
+        className="rounded bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:bg-blue-300"
+        disabled={isCreating}
+      >
+        {isCreating ? "Creating..." : "Create Post"}
+      </IntentButton>
+    </PostForm>
   );
 };
 
 export const EditPostForm: FC<
-  Pick<PostFormProps, "initialPost" | "errors" | "loading">
-> = ({ initialPost, errors, loading }) => {
+  Pick<PostFormProps, "initialPost" | "errors"> & {
+    readonly isUpdating: boolean;
+    readonly isDeleting: boolean;
+  }
+> = ({ initialPost, errors, isUpdating, isDeleting }) => {
+  const loading = isUpdating || isDeleting;
+
   return (
-    <PostForm
-      initialPost={initialPost}
-      errors={errors}
-      loading={loading}
-      actionButtonIntent="update"
-      actionButtonText={loading ? "Updating..." : "Update Post"}
-    >
-      <button
-        type="submit"
-        name="intent"
-        value={POST_FORM_INTENTS.DELETE}
+    <PostForm initialPost={initialPost} errors={errors}>
+      <IntentButton
+        intent="update"
+        className="rounded bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:bg-blue-300"
+        disabled={loading}
+      >
+        {isUpdating ? "Updating..." : "Update Post"}
+      </IntentButton>
+      <IntentButton
+        intent="delete"
         className="rounded bg-red-500 py-2 px-4 text-white hover:bg-red-600 focus:bg-red-400 disabled:bg-red-300"
         disabled={loading}
       >
-        {loading ? "Deleting..." : "Delete Post"}
-      </button>
+        {isDeleting ? "Deleting..." : "Delete Post"}
+      </IntentButton>
     </PostForm>
+  );
+};
+
+type IntentButtonProps = React.HTMLProps<HTMLButtonElement> & {
+  readonly intent: PostFormIntents;
+  readonly children?: ReactNode;
+};
+
+const IntentButton: FC<IntentButtonProps> = ({
+  intent,
+  children,
+  ...restButtonProps
+}) => {
+  return (
+    <button {...restButtonProps} type="submit" name="intent" value={intent}>
+      {children}
+    </button>
   );
 };
